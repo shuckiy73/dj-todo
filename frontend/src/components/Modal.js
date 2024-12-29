@@ -1,6 +1,5 @@
-// frontend/src/components/Modal.js
-
-import React, { Component } from "react";
+import React, { useState } from "react";
+import PropTypes from "prop-types";
 import {
   Button,
   Modal,
@@ -10,72 +9,95 @@ import {
   Form,
   FormGroup,
   Input,
-  Label
+  Label,
 } from "reactstrap";
 
-export default class CustomModal extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      activeItem: this.props.activeItem
-    };
-  }
+const CustomModal = ({ activeItem, toggle, onSave }) => {
+  const [item, setItem] = useState(activeItem || {
+    title: "",
+    description: "",
+    completed: false,
+  });
 
-  handleChange = e => {
-    let { name, value } = e.target;
-    if (e.target.type === "checkbox") {
-      value = e.target.checked;
-    }
-    const activeItem = { ...this.state.activeItem, [name]: value };
-    this.setState({ activeItem });
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setItem({
+      ...item,
+      [name]: type === "checkbox" ? checked : value,
+    });
   };
 
-  render() {
-    const { toggle, onSave } = this.props;
-    return (
-      <Modal isOpen={true} toggle={toggle}>
-        <ModalHeader toggle={toggle}> Todo Item </ModalHeader>
-        <ModalBody>
-          <Form>
-            <FormGroup>
-              <Label for="title">Title</Label>
+  const handleSave = () => {
+    if (!item.title.trim()) {
+      alert("Заголовок не может быть пустым!");
+      return;
+    }
+    onSave(item);
+  };
+
+  return (
+    <Modal isOpen={true} toggle={toggle}>
+      <ModalHeader toggle={toggle}>Задача</ModalHeader>
+      <ModalBody>
+        <Form>
+          <FormGroup>
+            <Label for="title">Заголовок</Label>
+            <Input
+              type="text"
+              name="title"
+              value={item.title}
+              onChange={handleChange}
+              placeholder="Введите заголовок задачи"
+            />
+          </FormGroup>
+          <FormGroup>
+            <Label for="description">Описание</Label>
+            <Input
+              type="text"
+              name="description"
+              value={item.description}
+              onChange={handleChange}
+              placeholder="Введите описание задачи"
+            />
+          </FormGroup>
+          <FormGroup check>
+            <Label for="completed">
               <Input
-                type="text"
-                name="title"
-                value={this.state.activeItem.title}
-                onChange={this.handleChange}
-                placeholder="Enter Todo Title"
+                type="checkbox"
+                name="completed"
+                checked={item.completed}
+                onChange={handleChange}
               />
-            </FormGroup>
-            <FormGroup>
-              <Label for="description">Description</Label>
-              <Input
-                type="text"
-                name="description"
-                value={this.state.activeItem.description}
-                onChange={this.handleChange}
-                placeholder="Enter Todo description"
-              />
-            </FormGroup>
-            <FormGroup check>
-              <Label for="completed">
-                <Input
-                  type="checkbox"
-                  name="completed"
-                  checked={this.state.activeItem.completed}
-                  onChange={this.handleChange}
-                />
-                Completed
-              </Label>
-            </FormGroup>
-          </Form>
-        </ModalBody>
-        <ModalFooter>
-          <Button color="success" onClick={() => onSave(this.state.activeItem)}>
-            Save
-          </Button>
-        </ModalFooter>
-      </Modal>
-    );
-  }
-}
+              Выполнено
+            </Label>
+          </FormGroup>
+        </Form>
+      </ModalBody>
+      <ModalFooter>
+        <Button color="success" onClick={handleSave}>
+          Сохранить
+        </Button>
+      </ModalFooter>
+    </Modal>
+  );
+};
+
+CustomModal.propTypes = {
+  activeItem: PropTypes.shape({
+    title: PropTypes.string,
+    description: PropTypes.string,
+    completed: PropTypes.bool,
+  }),
+  toggle: PropTypes.func.isRequired,
+  onSave: PropTypes.func.isRequired,
+};
+
+CustomModal.defaultProps = {
+  activeItem: {
+    title: "",
+    description: "",
+    completed: false,
+  },
+};
+
+export default CustomModal;
